@@ -1,0 +1,8 @@
+<div class="forum_leaderboard_block">
+<h2>{{ display_name }}</h2>
+<ul>
+    {% for thread in threads %}
+        <li>{{ thread.title }} (Score: {{ thread.votes.point }})</li>
+    {% endfor %}
+</ul>
+</div>
