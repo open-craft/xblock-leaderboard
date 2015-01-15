@@ -22,7 +22,7 @@ def package_data(pkg, roots):
 
 setup(
     name='xblock-leaderboard',
-    version='0.1',
+    version='0.2',
     description='An XBlock which lists the top threads of an inline discussion.',
     packages=[
         'forum_leaderboard',

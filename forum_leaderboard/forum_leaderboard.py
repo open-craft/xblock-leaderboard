@@ -78,20 +78,51 @@ class ForumLeaderboardXBlock(XBlock):
         return self.create_fragment(
             "static/html/forum_leaderboard.html", context=context,
             css=["static/css/forum_leaderboard.css"],
-            javascript=["static/js/src/forum_leaderboard.js"],
-            initialize='ForumLeaderboardXBlock')
+        )
 
     def author_view(self, context=None):
         return self.create_fragment(
             "static/html/forum_leaderboard_studio.html",
             context={
                 'discussion_id': self.discussion_id,
-                'display_name': self.display_name
+                'display_name': self.display_name,
+                'count': self.count,
             },
             css=["static/css/forum_leaderboard.css"])
+            context={'discussion_id': self.discussion_id, 'count': self.count},
+            css=["static/css/forum_leaderboard.css"]
+        )
 
-    # TO-DO: Create a Dummy thread service for Workbench tests, and
-    # create scenarios for it.
+    def studio_view(self, context=None):
+        return self.create_fragment(
+            "static/html/forum_leaderboard_studio_edit.html",
+            context={'discussion_id': self.discussion_id, 'count': self.count},
+            css=["static/css/forum_leaderboard.css"],
+            javascript=["static/js/src/forum_leaderboard_studio.js"],
+            initialize='ForumLeaderboardStudioXBlock'
+        )
+
+    @XBlock.json_handler
+    def studio_submit(self, data, suffix=''):
+        result = {'success': True, 'errors': []}
+        try:
+            count = int(data.get('count', ForumLeaderboardXBlock.count.default))
+            if not count > 0:
+                raise ValueError
+        except ValueError:
+            result['success'] = False
+            result['errors'].append("'count' must be an integer and greater than 0.")
+
+        discussion_id = data.get('discussion_id', '')
+        if not isinstance(discussion_id, basestring):
+            result['success'] = False
+            result['errors'].append("'discussion_id' must be a string.")
+
+        if result['success']:
+            self.count = count
+            self.discussion_id = discussion_id
+        return result
+
     @staticmethod
     def workbench_scenarios():
         """A canned scenario for display in the workbench."""
