@@ -29,7 +29,10 @@ setup(
     ],
     install_requires=[
         'XBlock',
+        'xblock-utils',
+        'ddt',
     ],
+    dependency_links=['https://github.com/edx-solutions/xblock-utils/archive/master.tar.gz'],
     entry_points={
         'xblock.v1': [
             'forum_leaderboard = forum_leaderboard:ForumLeaderboardXBlock',

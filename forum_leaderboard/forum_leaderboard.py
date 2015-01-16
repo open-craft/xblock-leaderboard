@@ -118,9 +118,7 @@ class ForumLeaderboardXBlock(XBlock):
                 'display_name': self.display_name,
                 'count': self.count,
             },
-            css=["static/css/forum_leaderboard.css"])
-            context={'discussion_id': self.discussion_id, 'count': self.count},
-            css=["static/css/forum_leaderboard.css"],
+            css=["static/css/forum_leaderboard.css"]
         )
 
     def studio_view(self, context=None):
@@ -158,8 +156,27 @@ class ForumLeaderboardXBlock(XBlock):
         """A canned scenario for display in the workbench."""
         return [
             ("Leaderboard with many threads",
-             """<vertical_demo>
+             """
+             <vertical_demo>
                 <forum_leaderboard discussion_id="many_threads"/>
-                </vertical_demo>
+             </vertical_demo>
              """),
+            ("Leaderboard with unvoted threads",
+             """
+             <vertical_demo>
+                 <forum_leaderboard discussion_id="unvoted_threads"/>
+             </vertical_demo>
+             """),
+            ("Leaderboard with varied voting",
+             """
+             <vertical_demo>
+                 <forum_leaderboard discussion_id="varied_voting" count="6"/>
+             </vertical_demo>
+             """),
+            ("Leaderboard with empty discussion",
+             """
+             <vertical_demo>
+                 <forum_leaderboard discussion_id="empty_discussion"/>
+             </vertical_demo>
+             """)
         ]
