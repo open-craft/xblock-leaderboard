@@ -4,7 +4,7 @@ Dummy comment client module, used for testing.
 
 
 def make_thread_dict(title, points):
-    return {'title': title, 'votes': {'point': points}}
+    return {'title': title, 'votes': {'point': points}, 'id': title}
 
 # Dictionary of dummy threads to return when using thread.search.
 test_ids = {

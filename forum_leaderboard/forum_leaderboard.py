@@ -69,7 +69,14 @@ class ForumLeaderboardXBlock(XBlock):
         if DEV_MODE:
             return 'dummy_key'
         else:
-            return unicode(self.location.course_key)
+            return self.location.course_key
+
+    def get_thread_url(self, course, discussion_id, thread_id):
+        """
+        Due to package structure, we can't easily import the standard
+        reverse_course_url function, which is the right way to do this.
+        """
+        return "/courses/{0}/discussion/forum/{1}/threads/{2}".format(course, discussion_id, thread_id)
 
     def student_view(self, context=None):
         """
@@ -90,6 +97,9 @@ class ForumLeaderboardXBlock(XBlock):
 
         # Score might be 0.
         threads = [thread for thread in threads if thread['votes']['point']]
+        for thread in threads:
+            thread['url'] = self.get_thread_url(
+                course, self.discussion_id, thread['id'])
 
         context = {
             'threads': threads,
