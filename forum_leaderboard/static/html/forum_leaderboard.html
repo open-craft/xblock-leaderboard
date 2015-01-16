@@ -3,6 +3,8 @@
 <ul>
     {% for thread in threads %}
         <li>{{ thread.title }} (Score: {{ thread.votes.point }})</li>
+    {% empty %}
+        <li>No threads with a score are available.</li>
     {% endfor %}
 </ul>
 </div>

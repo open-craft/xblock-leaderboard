@@ -11,7 +11,13 @@ from xblock.core import XBlock
 from xblock.fields import Scope, Integer, String
 from xblock.fragment import Fragment
 
-import lms.lib.comment_client as cc
+try:
+    import lms.lib.comment_client as cc
+    DEV_MODE = False
+except ImportError:
+    # We're in the SDK, probably.
+    import dummy_cc as cc
+    DEV_MODE = True
 
 
 class ForumLeaderboardXBlock(XBlock):
@@ -55,6 +61,16 @@ class ForumLeaderboardXBlock(XBlock):
             frag.initialize_js(initialize)
         return frag
 
+    def get_course(self):
+        """
+        Gets the course, or returns a dummy value if not in an edx-platform
+        environment.
+        """
+        if DEV_MODE:
+            return 'dummy_key'
+        else:
+            return unicode(self.location.course_key)
+
     def student_view(self, context=None):
         """
         The primary view of the ForumLeaderboardXBlock, shown to students
@@ -65,11 +81,15 @@ class ForumLeaderboardXBlock(XBlock):
         # crash. Force call of the author view.
         if getattr(self.runtime, 'is_author_mode', False):
             return self.author_view()
-        course = self.location.course_key
+
+        course = self.get_course()
         threads = cc.Thread.search({
             'course_id': unicode(course), 'commentable_id': self.discussion_id,
             'sort_key': 'votes', 'per_page': self.count
         })[0]
+
+        # Score might be 0.
+        threads = [thread for thread in threads if thread['votes']['point']]
 
         context = {
             'threads': threads,
@@ -90,7 +110,7 @@ class ForumLeaderboardXBlock(XBlock):
             },
             css=["static/css/forum_leaderboard.css"])
             context={'discussion_id': self.discussion_id, 'count': self.count},
-            css=["static/css/forum_leaderboard.css"]
+            css=["static/css/forum_leaderboard.css"],
         )
 
     def studio_view(self, context=None):
@@ -113,7 +133,7 @@ class ForumLeaderboardXBlock(XBlock):
             result['success'] = False
             result['errors'].append("'count' must be an integer and greater than 0.")
 
-        discussion_id = data.get('discussion_id', '')
+        discussion_id = data.get('discussion_id', '').strip()
         if not isinstance(discussion_id, basestring):
             result['success'] = False
             result['errors'].append("'discussion_id' must be a string.")
@@ -127,9 +147,9 @@ class ForumLeaderboardXBlock(XBlock):
     def workbench_scenarios():
         """A canned scenario for display in the workbench."""
         return [
-            ("ForumLeaderboardXBlock",
+            ("Leaderboard with many threads",
              """<vertical_demo>
-                <forum_leaderboard/>
+                <forum_leaderboard discussion_id="many_threads"/>
                 </vertical_demo>
              """),
         ]
