@@ -14,7 +14,7 @@ class LeaderboardTestCase(SeleniumBaseTest):
         self.go_to_page(page)
         line_items = [
             item for item in
-            self.browser.find_elements_by_css_selector('.forum_leaderboard_block ul li')
+            self.browser.find_elements_by_css_selector('ul.forum-leaderboard li')
         ]
         item_text = [item.text for item in line_items]
         self.assertEqual(

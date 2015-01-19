@@ -1,6 +1,6 @@
 <div class="forum_leaderboard_block">
 <h2>{{ display_name }}</h2>
-<ul>
+<ul class="forum-leaderboard">
     {% for thread in threads %}
         <li><a href="{{ thread.url }}">{{ thread.title }}</a> by {{thread.username}} (Score: {{ thread.votes.point }})</li>
     {% empty %}
