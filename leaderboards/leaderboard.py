@@ -8,8 +8,10 @@ import pkg_resources
 from xblock.core import XBlock
 from xblock.fields import Scope, Integer
 from xblock.fragment import Fragment
+from xblock.validation import ValidationMessage
 
 
+@XBlock.needs("i18n")
 class LeaderboardXBlock(XBlock):
     """
     Base class for leaderboard XBlocks
@@ -93,3 +95,18 @@ class LeaderboardXBlock(XBlock):
             "static/html/{}".format(self.STUDENT_VIEW_TEMPLATE),
             context=context,
         )
+
+    def validate(self):
+        """
+        Validates the state of this xblock
+        """
+        _ = self.runtime.service(self, "i18n").ugettext
+        validation = super(LeaderboardXBlock, self).validate()
+        if self.count <= 0:
+            validation.add(
+                ValidationMessage(
+                    ValidationMessage.ERROR,
+                    _(u"This component must be configured to display at least one entry.")
+                )
+            )
+        return validation
