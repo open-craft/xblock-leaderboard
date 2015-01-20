@@ -1,0 +1,8 @@
+<div class="grade_leaderboard_block">
+<h2>{{ display_name }}</h2>
+    <p>
+        {% if graded_target_id %}
+            This XBlock will show a leaderboard of up to {{ count }} top students based on their grades in "{{ graded_target_name }}".
+        {% endif %}
+    </p>
+</div>

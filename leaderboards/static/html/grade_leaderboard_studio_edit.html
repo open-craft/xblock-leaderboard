@@ -1,0 +1,37 @@
+{% load i18n %}
+<div class="wrapper-comp-settings is-active editor-with-buttons" id="settings-tab">
+    <ul class="list-input settings-list">
+        <li class="field comp-setting-entry is-set">
+            <div class="wrapper-comp-setting">
+                <label class="label setting-label" for="graded_target_id">Graded Component</label>
+                <select name="graded_target_id" id="graded_target_id">
+                    <option value="" {% if not graded_target_id %}selected="selected"{% endif %}>{% trans "Not Set" %}</option>
+                    {% for block in block_tree %}
+                        <option value="{{ block.id }}"{% if not block.eligible %} disabled="disabled"{% endif %}{% if block.is_this %} style="font-weight: bold;"{% endif %} {% if block.id == graded_target_id %}selected="selected"{% endif %} one="{{block.id}}" two="{{graded_target_id}}">
+                            {% for _ in ""|ljust:block.depth %}&nbsp; &nbsp;{% endfor %}
+                            {{ block.name }}{% if block.is_this %} ({% trans "This leaderboard" %}){% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <span class="tip setting-help">{% trans "Choose a component from which to calculate the top students and build the leaderboard." %}</span>
+        </li>
+        <li class="field comp-setting-entry is-set">
+            <div class="wrapper-comp-setting">
+                <label class="label setting-label" for="count">Count</label>
+                <input class="input setting-input" name="count" id="count" value="{{count}}" type="number" min="1" step="1" />
+            </div>
+            <span class="tip setting-help">{% trans "The maximum number of threads to display on the leaderboard." %}</span>
+        </li>
+    </ul>
+    <div class="xblock-actions">
+        <ul>
+            <li class="action-item">
+                <a href="#" class="button action-primary save-button">{% trans "Save" %}</a>
+            </li>
+            <li class="action-item">
+                <a href="#" class="button cancel-button">{% trans "Cancel" %}</a>
+            </li>
+        </ul>
+    </div>
+</div>

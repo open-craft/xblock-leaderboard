@@ -36,6 +36,7 @@ setup(
     entry_points={
         'xblock.v1': [
             'forum_leaderboard = leaderboards.forum_leaderboard:ForumLeaderboardXBlock',
+            'grade_leaderboard = leaderboards.grade_leaderboard:GradeLeaderboardXBlock',
         ]
     },
     package_data=package_data("leaderboards", ["static", "public"]),
