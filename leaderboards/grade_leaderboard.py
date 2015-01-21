@@ -118,14 +118,17 @@ class GradeLeaderboardXBlock(LeaderboardXBlock):
                 for child_id in block.children:
                     build_tree(block.runtime.get_block(child_id), ancestors=(ancestors + [new_entry]))
 
-        # Determine the root block and build the tree:
+        # Determine the root block and build the tree from its immediate children.
+        # We don't include the root (course) block because it has too complex a
+        # grading calculation and it's not required for intended uses of this block.
         root_block = self
         while True:
             parent = root_block.get_parent()
             if not parent:
                 break
             root_block = parent
-        build_tree(root_block, [])
+        for child_id in root_block.children:
+            build_tree(root_block.runtime.get_block(child_id), [])
 
         return self.create_fragment(
             "static/html/grade_leaderboard_studio_edit.html",
