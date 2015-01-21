@@ -2,13 +2,15 @@
 Common functionality for Leaderboard XBlocks
 """
 from django.template import Template, Context
-
+import logging
 import pkg_resources
 
 from xblock.core import XBlock
 from xblock.fields import Scope, Integer
 from xblock.fragment import Fragment
 from xblock.validation import ValidationMessage
+
+log = logging.getLogger(__name__)
 
 
 @XBlock.needs("i18n")
@@ -24,6 +26,10 @@ class LeaderboardXBlock(XBlock):
         default=10, scope=Scope.settings,
         help="How many entries to display on the leaderboard."
     )
+
+    def _(self, text):
+        """ translate text """
+        return self.runtime.service(self, "i18n").ugettext(text)
 
     def resource_string(self, path):
         """
@@ -72,7 +78,11 @@ class LeaderboardXBlock(XBlock):
             return self.author_view()
 
         # Convert from scores to numbered ranks which can include ties:
-        data = self.get_scores()
+        try:
+            data = self.get_scores()
+        except Exception:
+            log.exception("Unable to get_scores() for leaderboard.")
+            return Fragment(self._(u"An error occurred. Unable to display leaderboard."))
         data.sort(cmp=lambda x,y: y[0] - x[0])  # sort by score
         data = data[:self.count]
         leaders = []  # list of (rank, entry) where rank starts at 1
@@ -100,13 +110,12 @@ class LeaderboardXBlock(XBlock):
         """
         Validates the state of this xblock
         """
-        _ = self.runtime.service(self, "i18n").ugettext
         validation = super(LeaderboardXBlock, self).validate()
         if self.count <= 0:
             validation.add(
                 ValidationMessage(
                     ValidationMessage.ERROR,
-                    _(u"This component must be configured to display at least one entry.")
+                    self._(u"This component must be configured to display at least one entry.")
                 )
             )
         return validation
