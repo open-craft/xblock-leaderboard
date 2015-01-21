@@ -3,13 +3,12 @@ Grade Leaderboard XBlock
 
 Shows the top students for a given block (and any children)
 """
+from .grade_source import EdxLmsGradeSource, MockGradeSource
 from .leaderboard import LeaderboardXBlock
-
-import random
 
 from xblock.core import XBlock
 from xblock.exceptions import JsonHandlerError
-from xblock.fields import Scope, String, Reference
+from xblock.fields import Scope, Dict, Reference, String
 from xblock.validation import ValidationMessage
 
 
@@ -28,6 +27,7 @@ def normalize_id(key):
 @XBlock.needs("i18n")
 class GradeLeaderboardXBlock(LeaderboardXBlock):
     STUDENT_VIEW_TEMPLATE = "grade_leaderboard.html"
+    GRADE_SOURCES = (EdxLmsGradeSource, MockGradeSource)  # Ordered list of class types that know how to get student grades
 
     display_name = String(
         default="Grade Leaderboard", scope=Scope.settings,
@@ -37,6 +37,7 @@ class GradeLeaderboardXBlock(LeaderboardXBlock):
         scope=Scope.settings,
         help="Which graded component to use as the basis of the leaderboard.",
     )
+    grades_cache = Dict(scope=Scope.user_state_summary)  # Cache for use by the grade_source
 
     def validate(self):
         """
@@ -63,11 +64,16 @@ class GradeLeaderboardXBlock(LeaderboardXBlock):
     def get_scores(self):
         """
         Compute the top students based on grade and return them.
+
+        Any exceptions thrown will be logged but are not user-visible.
         """
-        students = []
-        for i in xrange(0, self.count):
-            students.append((random.randint(0,100), {"name": random.choice(["Jamie", "Alex", "Sam", "Jordan", "Taylor"])}))
-        return students
+        if not self.graded_target_id:
+            raise RuntimeError("graded_target_id not set.")
+        for grade_source_type in self.GRADE_SOURCES:
+            grade_source = grade_source_type(self)
+            if grade_source.is_supported():
+                return grade_source.get_grades(self.graded_target_id, self.count)
+        raise RuntimeError("No grade sources available.")
 
     def author_view(self, context=None):
         graded_target_name = self.graded_target_id
