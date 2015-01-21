@@ -22,14 +22,17 @@ def package_data(pkg, roots):
 
 setup(
     name='xblock-leaderboard',
-    version='0.1',
+    version='0.2',
     description='An XBlock which lists the top threads of an inline discussion.',
     packages=[
         'forum_leaderboard',
     ],
     install_requires=[
         'XBlock',
+        'xblock-utils',
+        'ddt',
     ],
+    dependency_links=['https://github.com/edx-solutions/xblock-utils/archive/master.tar.gz'],
     entry_points={
         'xblock.v1': [
             'forum_leaderboard = forum_leaderboard:ForumLeaderboardXBlock',

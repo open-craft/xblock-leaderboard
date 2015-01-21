@@ -1,0 +1,28 @@
+<div class="wrapper-comp-settings is-active editor-with-buttons" id="settings-tab">
+    <ul class="list-input settings-list">
+        <li class="field comp-setting-entry is-set">
+            <div class="wrapper-comp-setting">
+                <label class="label setting-label" for="discussion_id">Discussion ID</label>
+                <input class="input setting-input" name="discussion_id" id="discussion_id" value="{{discussion_id}}" type="text" />
+            </div>
+            <span class="tip setting-help">Paste the ID of the inline discussion you wish to have a leaderboard for.</span>
+        </li>
+        <li class="field comp-setting-entry is-set">
+            <div class="wrapper-comp-setting">
+                <label class="label setting-label" for="count">Count</label>
+                <input class="input setting-input" name="count" id="count" value="{{count}}" type="number" min="1" step="1" />
+            </div>
+            <span class="tip setting-help">The maximum number of threads to display on the leaderboard.</span>
+        </li>
+    </ul>
+    <div class="xblock-actions">
+        <ul>
+            <li class="action-item">
+                <a href="#" class="button action-primary save-button">Save</a>
+            </li>
+            <li class="action-item">
+                <a href="#" class="button cancel-button">Cancel</a>
+            </li>
+        </ul>
+    </div>
+</div>
