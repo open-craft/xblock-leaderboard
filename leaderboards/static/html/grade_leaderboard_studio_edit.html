@@ -7,9 +7,15 @@
                 <select name="graded_target_id" id="graded_target_id">
                     <option value="" {% if not graded_target_id %}selected="selected"{% endif %}>{% trans "Not Set" %}</option>
                     {% for block in block_tree %}
-                        <option value="{{ block.id }}"{% if not block.eligible %} disabled="disabled"{% endif %}{% if block.is_this %} style="font-weight: bold;"{% endif %} {% if block.id == graded_target_id %}selected="selected"{% endif %} one="{{block.id}}" two="{{graded_target_id}}">
+                        <option
+                            value="{{ block.id }}"
+                            {% if not block.eligible %} disabled="disabled" {% endif %}
+                            {% if block.is_this %} style="font-weight: bold;" {% endif %}
+                            {% if block.id == graded_target_id %} selected="selected" {% endif %}
+                        >
                             {% for _ in ""|ljust:block.depth %}&nbsp; &nbsp;{% endfor %}
-                            {{ block.name }}{% if block.is_this %} ({% trans "This leaderboard" %}){% endif %}
+                            {{ block.name }}
+                            {% if block.is_this %}({% trans "This leaderboard" %}){% endif %}
                         </option>
                     {% endfor %}
                 </select>

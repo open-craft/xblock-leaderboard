@@ -170,7 +170,7 @@ class GradeLeaderboardXBlock(LeaderboardXBlock):
             ("Grade Leaderboard (problem and linked leaderboard)",
              """
              <vertical_demo>
-                <problem_demo name="problem1">
+                <problem_demo>
                     <html_demo><p>What is $a+$b?</p></html_demo>
                     <textinput_demo name="sum_input" input_type="int" />
                     <equality_demo name="sum_checker" left="./sum_input/@student_input" right="$c" />
@@ -181,13 +181,14 @@ class GradeLeaderboardXBlock(LeaderboardXBlock):
                         c = a + b
                     </script>
                 </problem_demo>
-                <grade_leaderboard graded_target_id="./problem1"/>
+                <grade_leaderboard graded_target_id="grade-leaderboard-problem-and-linked-leaderboard.problem_demo.d0.u0"/>
              </vertical_demo>
              """),
+            # Note the graded_target ID above is specific to workbench and this scenario.
             ("Grade Leaderboard (invalid block configuration)",
              """
              <vertical_demo>
-                <grade_leaderboard graded_target_id="./problem2"/>
+                <grade_leaderboard graded_target_id="invalid"/>
              </vertical_demo>
              """),
         ]

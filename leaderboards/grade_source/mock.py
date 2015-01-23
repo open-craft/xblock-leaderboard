@@ -24,11 +24,10 @@ class MockGradeSource(GradeSource):
 
         Results should be consistent for use in tests etc.
         """
+        # Even though this is just a mock source, verify target_block_id and that the runtime can load blocks for us:
+        self.host_block.runtime.get_block(target_block_id)
         # Seed a random generator consistent based on target_block_id:
-        seed = 42
-        for letter in unicode(target_block_id):
-            seed += ord(letter)
-        rand = random.Random(seed)
+        rand = random.Random(target_block_id)
 
         if limit_hint is None:
             limit_hint = rand.randint(5, 80)
