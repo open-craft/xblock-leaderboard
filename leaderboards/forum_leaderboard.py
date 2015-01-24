@@ -50,6 +50,8 @@ class ForumLeaderboardXBlock(LeaderboardXBlock):
         """
         Compute the top threads and return them.
         """
+        if not self.discussion_id:
+            raise RuntimeError("No discussion ID configured.")
         course = self.get_course()
         threads = cc.Thread.search({
             'course_id': unicode(course), 'commentable_id': self.discussion_id,
