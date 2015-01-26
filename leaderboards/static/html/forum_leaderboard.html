@@ -1,0 +1,13 @@
+{% load i18n %}
+<div class="forum_leaderboard_block">
+<h2>{{ display_name }}</h2>
+{% if leaders %}
+    <ol class="forum-leaderboard">
+        {% for rank, thread in leaders %}
+            <li value="{{rank}}"><a href="{{ thread.url }}">{{ thread.title }}</a> by {{thread.username}} (Score: {{ thread.votes.point }})</li>
+        {% endfor %}
+    </ol>
+{% else %}
+    <p>{% trans "There are not yet any discussions with a score." %}</p>
+{% endif %}
+</div>

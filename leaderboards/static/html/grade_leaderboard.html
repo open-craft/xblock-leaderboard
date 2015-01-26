@@ -1,0 +1,13 @@
+{% load i18n %}
+<div class="grade_leaderboard_block">
+<h2>{{ display_name }}</h2>
+{% if leaders %}
+    <ol class="grade-leaderboard">
+        {% for rank, student in leaders %}
+            <li value="{{rank}}">{{student.name}} ({{student.score|floatformat:0}}%)</li>
+        {% endfor %}
+    </ol>
+{% else %}
+    <p>{% trans "No students have yet been given grades that would appear on this leaderboard." %}</p>
+{% endif %}
+</div>

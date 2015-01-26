@@ -3,13 +3,10 @@ Forum Leaderboard XBlock
 
 Shows the top threads for a given discussion ID by vote.
 """
-from django.template import Template, Context
-
-import pkg_resources
+from .leaderboard import LeaderboardXBlock
 
 from xblock.core import XBlock
-from xblock.fields import Scope, Integer, String
-from xblock.fragment import Fragment
+from xblock.fields import Scope, String
 
 try:
     import lms.lib.comment_client as cc
@@ -20,46 +17,17 @@ except ImportError:
     DEV_MODE = True
 
 
-class ForumLeaderboardXBlock(XBlock):
+class ForumLeaderboardXBlock(LeaderboardXBlock):
+    STUDENT_VIEW_TEMPLATE = "forum_leaderboard.html"
+
     display_name = String(
         default="Forum Leaderboard", scope=Scope.settings,
         help="Display name for this block."
     )
-    # Studio view not yet written. To test, set the default here,
-    # or manually set in Mongo.
     discussion_id = String(
         default="", scope=Scope.settings,
         help="The ID of the inline discussion to tally leading threads for.",
     )
-    count = Integer(
-        default=10, scope=Scope.settings,
-        help="How many threads to display."
-    )
-
-    def resource_string(self, path):
-        """
-        Handy helper for getting resources from our kit.
-        """
-        data = pkg_resources.resource_string(__name__, path)
-        return data.decode("utf8")
-
-    def create_fragment(self, html, context=None, css=None, javascript=None, initialize=None):
-        """
-        Create an XBlock, given an HTML resource string and an optional context, list of CSS
-        resource strings, list of JavaScript resource strings, and initialization function name.
-        """
-        html = Template(self.resource_string(html))
-        context = context or {}
-        css = css or []
-        javascript = javascript or []
-        frag = Fragment(html.render(Context(context)))
-        for sheet in css:
-            frag.add_css(self.resource_string(sheet))
-        for script in javascript:
-            frag.add_javascript(self.resource_string(script))
-        if initialize:
-            frag.initialize_js(initialize)
-        return frag
 
     def get_course(self):
         """
@@ -78,37 +46,25 @@ class ForumLeaderboardXBlock(XBlock):
         """
         return "/courses/{0}/discussion/forum/{1}/threads/{2}".format(course, discussion_id, thread_id)
 
-    def student_view(self, context=None):
+    def get_scores(self):
         """
-        The primary view of the ForumLeaderboardXBlock, shown to students
-        when viewing courses.
+        Compute the top threads and return them.
         """
-        # On first adding the block, the studio calls student_view instead of
-        # author_view, but the studio can't access the forum, so this would
-        # crash. Force call of the author view.
-        if getattr(self.runtime, 'is_author_mode', False):
-            return self.author_view()
-
+        if not self.discussion_id:
+            raise RuntimeError("No discussion ID configured.")
         course = self.get_course()
         threads = cc.Thread.search({
             'course_id': unicode(course), 'commentable_id': self.discussion_id,
-            'sort_key': 'votes', 'per_page': self.count
+            'sort_key': 'votes', 'per_page': self.count - 1
         })[0]
 
-        # Score might be 0.
-        threads = [thread for thread in threads if thread['votes']['point']]
+        scored_threads = []
         for thread in threads:
-            thread['url'] = self.get_thread_url(
-                course, self.discussion_id, thread['id'])
-
-        context = {
-            'threads': threads,
-            'display_name': self.display_name
-        }
-        return self.create_fragment(
-            "static/html/forum_leaderboard.html", context=context,
-            css=["static/css/forum_leaderboard.css"],
-        )
+            score = thread['votes']['point']  # Might be 0
+            if score:
+                thread['url'] = self.get_thread_url(course, self.discussion_id, thread['id'])
+                scored_threads.append((score, thread))
+        return scored_threads
 
     def author_view(self, context=None):
         return self.create_fragment(
@@ -118,14 +74,12 @@ class ForumLeaderboardXBlock(XBlock):
                 'display_name': self.display_name,
                 'count': self.count,
             },
-            css=["static/css/forum_leaderboard.css"]
         )
 
     def studio_view(self, context=None):
         return self.create_fragment(
             "static/html/forum_leaderboard_studio_edit.html",
             context={'discussion_id': self.discussion_id, 'count': self.count},
-            css=["static/css/forum_leaderboard.css"],
             javascript=["static/js/src/forum_leaderboard_studio.js"],
             initialize='ForumLeaderboardStudioXBlock'
         )
@@ -134,7 +88,7 @@ class ForumLeaderboardXBlock(XBlock):
     def studio_submit(self, data, suffix=''):
         result = {'success': True, 'errors': []}
         try:
-            count = int(data.get('count', ForumLeaderboardXBlock.count.default))
+            count = int(data.get('count', LeaderboardXBlock.count.default))
             if not count > 0:
                 raise ValueError
         except ValueError:

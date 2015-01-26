@@ -1,4 +1,4 @@
-"""Setup for forum_leaderboard XBlock."""
+"""Setup for leaderboard XBlock."""
 
 import os
 from setuptools import setup
@@ -25,18 +25,19 @@ setup(
     version='0.2',
     description='An XBlock which lists the top threads of an inline discussion.',
     packages=[
-        'forum_leaderboard',
+        'leaderboards',
     ],
     install_requires=[
         'XBlock',
         'xblock-utils',
         'ddt',
     ],
-    dependency_links=['https://github.com/edx-solutions/xblock-utils/archive/master.tar.gz'],
+    dependency_links=['https://github.com/edx-solutions/xblock-utils/tarball/master#egg=xblock-utils'],
     entry_points={
         'xblock.v1': [
-            'forum_leaderboard = forum_leaderboard:ForumLeaderboardXBlock',
+            'forum_leaderboard = leaderboards.forum_leaderboard:ForumLeaderboardXBlock',
+            'grade_leaderboard = leaderboards.grade_leaderboard:GradeLeaderboardXBlock',
         ]
     },
-    package_data=package_data("forum_leaderboard", ["static", "public"]),
+    package_data=package_data("leaderboards", ["static", "public"]),
 )
