@@ -32,26 +32,14 @@ class EdxLmsGradeSource(GradeSource):
         Get the grades as a percentage for the top students who have started or
         completed target_block_id and its descendants.
 
-        --- Braden's Commentary: ---
-        There are two ways I can think of to compute the grades:
-        1) This block (or a runtime service) can walk the course tree
-           and sum up the student grades, computing the percentage
-           from the grades cached in StudentModule
-           Pros:
-             * Very efficient - can use only cached grades
-             * Gets the grades for all students in one single aggregate MySQL query per block
-           Cons:
-             * May not match edX grading exactly
-             * Won't support randomize, split_test, ab_test, library_content, 
-               or always_recalculate_grade blocks since we would need to instantiate
-               those blocks for each student and query their grades.
+        The current implementation is as follows:
         
-           e.g. modules_in_course = StudentModule.objects.filter(course_id=course_id)  # module_state_key
-        
-        2) This block (or a runtime service) can call the get_score() grading
-           computation built into edX which returns the grade for the current student
-           only, and can cache the student's grade in this block. The block will then
-           use these cached grades to compute the leaderboard
+           This block 'grade_source' class calls the get_score() grading
+           computation built into edX which returns the grade for the current
+           student only, which is then cached in the grade_leaderboard xblock
+           in a user_state_summary field. The block will then use the cached
+           grades from all students to compute the leaderboard.
+
            Pros:
              * Fairly efficient - generally uses cached grades, making one MySQL query per block
              * Grading should match edX grading very well since it uses the same method
@@ -61,16 +49,12 @@ class EdxLmsGradeSource(GradeSource):
                in the leaderboard - could result in missing/outdated data, depending
                on where the block appears in the course and how often students view 
                the leaderboard.
-             * Storing data in Scope.user_state_summary could lead to read write conflicts?
+             * Storing data in Scope.user_state_summary will lead to read write conflicts.
                e.g. if two students view the courseware simultaneously and their requests
                are handled by different gunicorn processes.
-               It's not clear if there is any locking around Scope.user_state_summary fields.
-               Seems that the LMS FieldDataCache has select_for_update option but it's usually
-               turned off. Workaround at 
-               https://groups.google.com/d/msg/edx-code/2a87zxjlrX0/xvqtvxCz8lwJ
-               seems like it would help but it does not bypass FieldDataCache itself...
         
-        This method implements approach #2:
+        TODO: We will need to replace this implementation with something that uses celery
+        to update student grades asynchronously and stores them in a more robust cache format.
         """
         total_correct, total_possible = 0, 0
         course_id = target_block_id.course_key.for_branch(None).version_agnostic()

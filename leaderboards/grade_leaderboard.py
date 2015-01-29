@@ -37,7 +37,8 @@ class GradeLeaderboardXBlock(LeaderboardXBlock):
         scope=Scope.settings,
         help="Which graded component to use as the basis of the leaderboard.",
     )
-    grades_cache = Dict(scope=Scope.user_state_summary)  # Cache for use by the grade_source
+    grades_cache = Dict(scope=Scope.user_state_summary)  # Cache for use by the grade_source.
+                                                         # Will need to be removed - see note in grade_source/edx.py
 
     def validate(self):
         """
