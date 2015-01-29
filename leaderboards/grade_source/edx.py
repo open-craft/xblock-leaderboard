@@ -1,3 +1,4 @@
+# pylint: disable=import-error
 """
 Fetch grades from the edX LMS as efficiently as possible.
 """
@@ -24,7 +25,7 @@ class EdxLmsGradeSource(GradeSource):
         try:
             runtime = self.host_block.runtime
             return EDX_FOUND and hasattr(runtime, "get_real_user") and hasattr(runtime, "anonymous_student_id")
-        except:
+        except Exception:
             return False
 
     def get_grades(self, target_block_id, limit_hint=None):
@@ -33,7 +34,7 @@ class EdxLmsGradeSource(GradeSource):
         completed target_block_id and its descendants.
 
         The current implementation is as follows:
-        
+
            This block 'grade_source' class calls the get_score() grading
            computation built into edX which returns the grade for the current
            student only, which is then cached in the grade_leaderboard xblock
@@ -44,15 +45,15 @@ class EdxLmsGradeSource(GradeSource):
              * Fairly efficient - generally uses cached grades, making one MySQL query per block
              * Grading should match edX grading very well since it uses the same method
              * Supports all block types
-           Cons: 
+           Cons:
              * Requires students to view the block before their grades appear
                in the leaderboard - could result in missing/outdated data, depending
-               on where the block appears in the course and how often students view 
+               on where the block appears in the course and how often students view
                the leaderboard.
              * Storing data in Scope.user_state_summary will lead to read write conflicts.
                e.g. if two students view the courseware simultaneously and their requests
                are handled by different gunicorn processes.
-        
+
         TODO: We will need to replace this implementation with something that uses celery
         to update student grades asynchronously and stores them in a more robust cache format.
         """

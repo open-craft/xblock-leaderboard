@@ -6,7 +6,7 @@ import logging
 import pkg_resources
 
 from xblock.core import XBlock
-from xblock.fields import Scope, Integer
+from xblock.fields import Scope, Integer, String
 from xblock.fragment import Fragment
 from xblock.validation import ValidationMessage
 
@@ -26,12 +26,16 @@ class LeaderboardXBlock(XBlock):
         default=10, scope=Scope.settings,
         help="How many entries to display on the leaderboard."
     )
+    display_name = String(
+        default="Leaderboard", scope=Scope.settings,
+        help="Display name for this block."
+    )
 
     def _(self, text):
         """ translate text """
         return self.runtime.service(self, "i18n").ugettext(text)
 
-    def resource_string(self, path):
+    def resource_string(self, path):  # pylint:disable=no-self-use
         """
         Handy helper for getting resources from our kit.
         """
@@ -68,6 +72,12 @@ class LeaderboardXBlock(XBlock):
         """
         raise NotImplementedError()
 
+    def author_view(self, context=None):
+        """
+        The preview of this leaderboard as seen by staff in Studio
+        """
+        raise NotImplementedError
+
     def student_view(self, context=None):
         """
         The primary view of the leaderboard, shown to students when viewing courses.
@@ -83,7 +93,7 @@ class LeaderboardXBlock(XBlock):
         except Exception:
             log.exception("Unable to get_scores() for leaderboard.")
             return Fragment(self._(u"An error occurred. Unable to display leaderboard."))
-        data.sort(cmp=lambda x,y: y[0] - x[0])  # sort by score
+        data.sort(cmp=lambda x, y: y[0] - x[0])  # sort by score
         data = data[:self.count]
         leaders = []  # list of (rank, entry) where rank starts at 1
         for score, entry in data:

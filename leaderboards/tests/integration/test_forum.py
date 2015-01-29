@@ -4,6 +4,7 @@ from urlparse import urlparse
 from xblockutils.base_test import SeleniumBaseTest
 from .forum_scenarios import forum_scenarios
 
+
 @ddt
 class LeaderboardTestCase(SeleniumBaseTest):
     module_name = __name__

@@ -9,12 +9,20 @@ from xblock.core import XBlock
 from xblock.fields import Scope, String
 
 try:
-    import lms.lib.comment_client as cc
+    import lms.lib.comment_client as cc  # pylint: disable=import-error
     DEV_MODE = False
 except ImportError:
     # We're in the SDK, probably.
-    import dummy_cc as cc
+    import leaderboards.dummy_cc as cc
     DEV_MODE = True
+
+
+def _get_thread_url(course, discussion_id, thread_id):
+    """
+    Due to package structure, we can't easily import the standard
+    reverse_course_url function, which is the right way to do this.
+    """
+    return "/courses/{0}/discussion/forum/{1}/threads/{2}".format(course, discussion_id, thread_id)
 
 
 class ForumLeaderboardXBlock(LeaderboardXBlock):
@@ -37,14 +45,7 @@ class ForumLeaderboardXBlock(LeaderboardXBlock):
         if DEV_MODE:
             return 'dummy_key'
         else:
-            return self.location.course_key
-
-    def get_thread_url(self, course, discussion_id, thread_id):
-        """
-        Due to package structure, we can't easily import the standard
-        reverse_course_url function, which is the right way to do this.
-        """
-        return "/courses/{0}/discussion/forum/{1}/threads/{2}".format(course, discussion_id, thread_id)
+            return self.scope_ids.usage_id.course_key
 
     def get_scores(self):
         """
@@ -62,7 +63,7 @@ class ForumLeaderboardXBlock(LeaderboardXBlock):
         for thread in threads:
             score = thread['votes']['point']  # Might be 0
             if score:
-                thread['url'] = self.get_thread_url(course, self.discussion_id, thread['id'])
+                thread['url'] = _get_thread_url(course, self.discussion_id, thread['id'])
                 scored_threads.append((score, thread))
         return scored_threads
 

@@ -27,7 +27,8 @@ def normalize_id(key):
 @XBlock.needs("i18n")
 class GradeLeaderboardXBlock(LeaderboardXBlock):
     STUDENT_VIEW_TEMPLATE = "grade_leaderboard.html"
-    GRADE_SOURCES = (EdxLmsGradeSource, MockGradeSource)  # Ordered list of class types that know how to get student grades
+    # Ordered list of class types that know how to get student grades
+    GRADE_SOURCES = (EdxLmsGradeSource, MockGradeSource)
 
     display_name = String(
         default="Grade Leaderboard", scope=Scope.settings,
@@ -37,8 +38,11 @@ class GradeLeaderboardXBlock(LeaderboardXBlock):
         scope=Scope.settings,
         help="Which graded component to use as the basis of the leaderboard.",
     )
-    grades_cache = Dict(scope=Scope.user_state_summary)  # Cache for use by the grade_source.
-                                                         # Will need to be removed - see note in grade_source/edx.py
+    grades_cache = Dict(
+        scope=Scope.user_state_summary,
+        # This field is a cache for use by the edX grade_source.
+        # It will need to be removed - see note in grade_source/edx.py
+    )
 
     def validate(self):
         """
@@ -98,6 +102,7 @@ class GradeLeaderboardXBlock(LeaderboardXBlock):
         own_id = normalize_id(self.scope_ids.usage_id)  # Normalization needed in edX Studio :-/
 
         flat_block_tree = []
+
         def build_tree(block, ancestors):
             """
             Build up a tree of information about the XBlocks descending from root_block
@@ -182,7 +187,8 @@ class GradeLeaderboardXBlock(LeaderboardXBlock):
                         c = a + b
                     </script>
                 </problem_demo>
-                <grade_leaderboard graded_target_id="grade-leaderboard-problem-and-linked-leaderboard.problem_demo.d0.u0"/>
+                <grade_leaderboard
+                    graded_target_id="grade-leaderboard-problem-and-linked-leaderboard.problem_demo.d0.u0"/>
              </vertical_demo>
              """),
             # Note the graded_target ID above is specific to workbench and this scenario.

@@ -9,6 +9,6 @@ install:
     - "pip install -r $VIRTUAL_ENV/src/xblock-sdk/requirements.txt"
     - "pip install -r $VIRTUAL_ENV/src/xblock-sdk/test-requirements.txt"
     - "python setup.py develop"
-script: python run_tests.py --with-coverage --cover-package=leaderboards
+script: pep8 leaderboards --max-line-length=120 && pylint leaderboards && python run_tests.py --with-coverage --cover-package=leaderboards
 notifications:
   email: false

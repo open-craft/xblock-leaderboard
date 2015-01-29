@@ -32,10 +32,10 @@ class MockGradeSource(GradeSource):
         if limit_hint is None:
             limit_hint = rand.randint(5, 80)
 
-        return [
-            (
-                rand.randint(0, 100),
-                {"name": u"{first} {initial}.".format(first=rand.choice(self.NAMES), initial=rand.choice(self.ALPHABET))}
-            )
-            for _ in xrange(0, limit_hint)
-        ]
+        random_name = lambda: u"{first} {initial}.".format(
+            first=rand.choice(self.NAMES),
+            initial=rand.choice(self.ALPHABET)
+        )
+        random_grade = lambda: rand.randint(0, 100)
+
+        return [(random_grade(), {"name": random_name()}) for _ in xrange(0, limit_hint)]
