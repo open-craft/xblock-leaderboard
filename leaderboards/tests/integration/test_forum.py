@@ -1,7 +1,8 @@
 from ddt import ddt, unpack, data
 from selenium.common.exceptions import NoSuchElementException
+from urlparse import urlparse
 from xblockutils.base_test import SeleniumBaseTest
-from scenarios import leaderboard_scenarios
+from .forum_scenarios import forum_scenarios
 
 @ddt
 class LeaderboardTestCase(SeleniumBaseTest):
@@ -9,7 +10,7 @@ class LeaderboardTestCase(SeleniumBaseTest):
     default_css_selector = 'div.forum_leaderboard_block'
 
     @unpack
-    @data(*leaderboard_scenarios)
+    @data(*forum_scenarios)
     def test_options(self, page, links, ol=None, message=None):
         self.go_to_page(page)
         if ol:
@@ -18,20 +19,10 @@ class LeaderboardTestCase(SeleniumBaseTest):
                 self.browser.find_elements_by_css_selector('.forum-leaderboard li')
             ]
             item_text = [item.text for item in line_items]
-            self.assertEqual(
-                item_text,
-                ol,
-            )
-            # Selenium returns hrefs with fully qualified URLs but does not have an easy
-            # way of grabbing the base URL.
-            # We start with the full URL, something like http://localhost:8000/whatever
+            self.assertEqual(item_text, ol)
 
-            # ['http:', '/', '/', 'localhost:8000', 'whatever']
-            base_url = self.browser.current_url.split('/', 3)
-
-            base_url.pop()
-            # http://localhost:8000
-            base_url = '/'.join(base_url)
+            parsed_url = urlparse(self.browser.current_url)
+            base_url = "{}://{}".format(parsed_url.scheme, parsed_url.netloc)
 
             page_links = []
             for item in line_items:

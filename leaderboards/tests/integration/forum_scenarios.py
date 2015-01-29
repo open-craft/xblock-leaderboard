@@ -2,7 +2,7 @@
 Contains a dictionary full of scenarios to test for different discussion situations.
 """
 
-leaderboard_scenarios = [
+forum_scenarios = [
     {
         'page': 'Empty Discussion',
         'message': 'There are not yet any discussions with a score.',
