@@ -149,7 +149,7 @@ class GradeLeaderboardXBlock(LeaderboardXBlock):
                 'graded_target_id': self.graded_target_id,
                 'block_tree': flat_block_tree,
             },
-            javascript=["static/js/src/grade_leaderboard_studio.js"],
+            javascript=["static/js/src/leaderboard_studio.js", "static/js/src/grade_leaderboard_studio.js"],
             initialize='GradeLeaderboardStudioXBlock'
         )
 

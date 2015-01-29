@@ -6,7 +6,9 @@ Shows the top threads for a given discussion ID by vote.
 from .leaderboard import LeaderboardXBlock
 
 from xblock.core import XBlock
+from xblock.exceptions import JsonHandlerError
 from xblock.fields import Scope, String
+from xblock.validation import ValidationMessage
 
 try:
     import lms.lib.comment_client as cc  # pylint: disable=import-error
@@ -81,30 +83,42 @@ class ForumLeaderboardXBlock(LeaderboardXBlock):
         return self.create_fragment(
             "static/html/forum_leaderboard_studio_edit.html",
             context={'discussion_id': self.discussion_id, 'count': self.count},
-            javascript=["static/js/src/forum_leaderboard_studio.js"],
+            javascript=["static/js/src/leaderboard_studio.js", "static/js/src/forum_leaderboard_studio.js"],
             initialize='ForumLeaderboardStudioXBlock'
         )
 
+    def validate(self):
+        """
+        Validates the state of this xblock
+        """
+        _ = self.runtime.service(self, "i18n").ugettext
+        validation = super(ForumLeaderboardXBlock, self).validate()
+
+        if not self.discussion_id:
+            validation.add(
+                ValidationMessage(
+                    ValidationMessage.WARNING,
+                    _(u"You will need to configure this XBlock with a Discussion ID.")
+                )
+            )
+        return validation
+
     @XBlock.json_handler
     def studio_submit(self, data, suffix=''):
-        result = {'success': True, 'errors': []}
         try:
             count = int(data.get('count', LeaderboardXBlock.count.default))
             if not count > 0:
                 raise ValueError
         except ValueError:
-            result['success'] = False
-            result['errors'].append("'count' must be an integer and greater than 0.")
+            raise JsonHandlerError(400, "'count' must be an integer and greater than 0.")
 
         discussion_id = data.get('discussion_id', '').strip()
         if not isinstance(discussion_id, basestring):
-            result['success'] = False
-            result['errors'].append("'discussion_id' must be a string.")
+            raise JsonHandlerError(400, "'discussion_id' must be a string.")
 
-        if result['success']:
-            self.count = count
-            self.discussion_id = discussion_id
-        return result
+        self.count = count
+        self.discussion_id = discussion_id
+        return {}
 
     @staticmethod
     def workbench_scenarios():

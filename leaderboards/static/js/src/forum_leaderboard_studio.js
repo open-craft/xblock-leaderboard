@@ -1,21 +1,18 @@
 /* Javascript for ForumLeaderboardXBlock. */
 function ForumLeaderboardStudioXBlock(runtime, element) {
-    $('.save-button', element).bind('click', function() {
-        var handlerUrl = runtime.handlerUrl(element, 'studio_submit');
+    "use strict";
+    var tools = new LeaderboardTools(runtime, element);
+    $('.save-button', element).bind('click', function(e) {
+        e.preventDefault();
         var data = {
             discussion_id: $(element).find('input[name=discussion_id]').val(),
             count: $(element).find('input[name=count]').val()
         };
-        $.post(handlerUrl, JSON.stringify(data)).success(function(response) {
-            if (response['success']) {
-                window.location.reload(false);
-                return
-            }
-            alert(response['errors'].join('\n'));
-        });
+        tools.studio_submit(data);
     });
 
-    $(element).find('.cancel-button').bind('click', function() {
+    $(element).find('.cancel-button').bind('click', function(e) {
+        e.preventDefault();
         runtime.notify('cancel', {});
     });
 }
