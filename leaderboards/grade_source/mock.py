@@ -15,8 +15,17 @@ class MockGradeSource(GradeSource):
     def is_supported(self):
         """
         Does self.host_block.runtime support this type of grade source?
+
+        We return True in the XBlock workbench or an XBlock test environment.
         """
-        return True
+        try:
+            from workbench.runtime import WorkbenchRuntime
+            if isinstance(self.host_block.runtime, WorkbenchRuntime):
+                return True
+        except ImportError:
+            pass
+        from xblock.test.tools import TestRuntime
+        return isinstance(self.host_block.runtime, TestRuntime)
 
     def get_grades(self, target_block_id, limit_hint=None):
         """
