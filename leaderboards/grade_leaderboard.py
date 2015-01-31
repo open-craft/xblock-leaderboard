@@ -107,14 +107,14 @@ class GradeLeaderboardXBlock(LeaderboardXBlock):
             """
             Build up a tree of information about the XBlocks descending from root_block
             """
-            block_name = getattr(block, "display_name")
+            block_name = getattr(block, "display_name", None)
             if not block_name:
                 block_type = block.runtime.id_reader.get_block_type(block.scope_ids.def_id)
                 block_name = "{} ({})".format(block_type, block.scope_ids.usage_id)
             eligible = getattr(block, "has_score", False)
             if eligible:
                 # If this block is graded, we mark all its ancestors as gradeable too
-                if not ancestors[-1]["eligible"]:
+                if ancestors and not ancestors[-1]["eligible"]:
                     for ancestor in ancestors:
                         ancestor["eligible"] = True
             block_id = normalize_id(block.scope_ids.usage_id)
@@ -134,11 +134,8 @@ class GradeLeaderboardXBlock(LeaderboardXBlock):
         # We don't include the root (course) block because it has too complex a
         # grading calculation and it's not required for intended uses of this block.
         root_block = self
-        while True:
-            parent = root_block.get_parent()
-            if not parent:
-                break
-            root_block = parent
+        while root_block.parent:
+            root_block = root_block.get_parent()
         for child_id in root_block.children:
             build_tree(root_block.runtime.get_block(child_id), [])
 

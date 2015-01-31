@@ -2,6 +2,8 @@ import ddt
 from django.test import Client
 from mock import Mock
 import unittest
+from xblock.core import XBlock, String, Scope
+from xblock.fragment import Fragment
 from xblock.runtime import DictKeyValueStore, KvsFieldData
 from xblock.test.tools import TestRuntime
 
@@ -84,3 +86,22 @@ class LeaderboardWorkbenchTest(object):
             scenario_url += view_name + '/'
         scenario_url += '?student_id=' + student_id
         return self.client.get(scenario_url)
+
+
+class Generic(XBlock):
+    """
+    A generic XBlock helpful for tests.
+    Use via the @XBlock.register_temp_plugin() decorator
+    """
+    has_children = True
+    has_score = True
+    content = String(scope=Scope.content, default=u'')
+    display_name = String(scope=Scope.content, default=u'')
+
+    def fallback_view(self, view_name, context=None):
+        result = Fragment()
+        child_frags = self.runtime.render_children(self, context=context)
+        result.add_frags_resources(child_frags)
+        result.content = self.content
+        result.add_content(self.runtime.render_template("vertical.html", children=child_frags))
+        return result
