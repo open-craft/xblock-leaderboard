@@ -1,5 +1,7 @@
 # Forum Leaderboard XBlock
 
+[![Build Status](https://travis-ci.org/open-craft/xblock-leaderboard.svg?branch=master)](https://travis-ci.org/open-craft/xblock-leaderboard)
+
 This XBlock allows you to display an arbitrary number of top scoring threads in an inline discussion.
 
 # Instructions

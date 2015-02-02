@@ -27,7 +27,8 @@ def normalize_id(key):
 @XBlock.needs("i18n")
 class GradeLeaderboardXBlock(LeaderboardXBlock):
     STUDENT_VIEW_TEMPLATE = "grade_leaderboard.html"
-    GRADE_SOURCES = (EdxLmsGradeSource, MockGradeSource)  # Ordered list of class types that know how to get student grades
+    # Ordered list of class types that know how to get student grades
+    GRADE_SOURCES = (EdxLmsGradeSource, MockGradeSource)
 
     display_name = String(
         default="Grade Leaderboard", scope=Scope.settings,
@@ -37,7 +38,11 @@ class GradeLeaderboardXBlock(LeaderboardXBlock):
         scope=Scope.settings,
         help="Which graded component to use as the basis of the leaderboard.",
     )
-    grades_cache = Dict(scope=Scope.user_state_summary)  # Cache for use by the grade_source
+    grades_cache = Dict(
+        scope=Scope.user_state_summary,
+        # This field is a cache for use by the edX grade_source.
+        # It will need to be removed - see note in grade_source/edx.py
+    )
 
     def validate(self):
         """
@@ -97,18 +102,19 @@ class GradeLeaderboardXBlock(LeaderboardXBlock):
         own_id = normalize_id(self.scope_ids.usage_id)  # Normalization needed in edX Studio :-/
 
         flat_block_tree = []
+
         def build_tree(block, ancestors):
             """
             Build up a tree of information about the XBlocks descending from root_block
             """
-            block_name = getattr(block, "display_name")
+            block_name = getattr(block, "display_name", None)
             if not block_name:
                 block_type = block.runtime.id_reader.get_block_type(block.scope_ids.def_id)
                 block_name = "{} ({})".format(block_type, block.scope_ids.usage_id)
             eligible = getattr(block, "has_score", False)
             if eligible:
                 # If this block is graded, we mark all its ancestors as gradeable too
-                if not ancestors[-1]["eligible"]:
+                if ancestors and not ancestors[-1]["eligible"]:
                     for ancestor in ancestors:
                         ancestor["eligible"] = True
             block_id = normalize_id(block.scope_ids.usage_id)
@@ -128,11 +134,8 @@ class GradeLeaderboardXBlock(LeaderboardXBlock):
         # We don't include the root (course) block because it has too complex a
         # grading calculation and it's not required for intended uses of this block.
         root_block = self
-        while True:
-            parent = root_block.get_parent()
-            if not parent:
-                break
-            root_block = parent
+        while root_block.parent:
+            root_block = root_block.get_parent()
         for child_id in root_block.children:
             build_tree(root_block.runtime.get_block(child_id), [])
 
@@ -143,7 +146,7 @@ class GradeLeaderboardXBlock(LeaderboardXBlock):
                 'graded_target_id': self.graded_target_id,
                 'block_tree': flat_block_tree,
             },
-            javascript=["static/js/src/grade_leaderboard_studio.js"],
+            javascript=["static/js/src/leaderboard_studio.js", "static/js/src/grade_leaderboard_studio.js"],
             initialize='GradeLeaderboardStudioXBlock'
         )
 
@@ -181,7 +184,8 @@ class GradeLeaderboardXBlock(LeaderboardXBlock):
                         c = a + b
                     </script>
                 </problem_demo>
-                <grade_leaderboard graded_target_id="grade-leaderboard-problem-and-linked-leaderboard.problem_demo.d0.u0"/>
+                <grade_leaderboard
+                    graded_target_id="grade-leaderboard-problem-and-linked-leaderboard.problem_demo.d0.u0"/>
              </vertical_demo>
              """),
             # Note the graded_target ID above is specific to workbench and this scenario.

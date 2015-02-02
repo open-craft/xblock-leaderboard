@@ -2,12 +2,7 @@
 Contains a dictionary full of scenarios to test for different discussion situations.
 """
 
-leaderboard_scenarios = [
-    {
-        'page': 'Empty Discussion',
-        'message': 'There are not yet any discussions with a score.',
-        'links': [None],
-    },
+forum_scenarios = [
     {
         'page': 'Many Threads',
         'ol': [
@@ -34,11 +29,6 @@ leaderboard_scenarios = [
             '/courses/dummy_key/discussion/forum/many_threads/threads/21',
             '/courses/dummy_key/discussion/forum/many_threads/threads/20',
         ],
-    },
-    {
-        'page': 'Unvoted Threads',
-        'message': 'There are not yet any discussions with a score.',
-        'links': [None],
     },
     {
         'page': 'Varied Voting',

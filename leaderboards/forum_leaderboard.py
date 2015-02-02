@@ -6,15 +6,25 @@ Shows the top threads for a given discussion ID by vote.
 from .leaderboard import LeaderboardXBlock
 
 from xblock.core import XBlock
+from xblock.exceptions import JsonHandlerError
 from xblock.fields import Scope, String
+from xblock.validation import ValidationMessage
 
 try:
-    import lms.lib.comment_client as cc
+    import lms.lib.comment_client as cc  # pylint: disable=import-error
     DEV_MODE = False
 except ImportError:
     # We're in the SDK, probably.
-    import dummy_cc as cc
+    import leaderboards.dummy_cc as cc
     DEV_MODE = True
+
+
+def _get_thread_url(course, discussion_id, thread_id):
+    """
+    Due to package structure, we can't easily import the standard
+    reverse_course_url function, which is the right way to do this.
+    """
+    return "/courses/{0}/discussion/forum/{1}/threads/{2}".format(course, discussion_id, thread_id)
 
 
 class ForumLeaderboardXBlock(LeaderboardXBlock):
@@ -37,14 +47,7 @@ class ForumLeaderboardXBlock(LeaderboardXBlock):
         if DEV_MODE:
             return 'dummy_key'
         else:
-            return self.location.course_key
-
-    def get_thread_url(self, course, discussion_id, thread_id):
-        """
-        Due to package structure, we can't easily import the standard
-        reverse_course_url function, which is the right way to do this.
-        """
-        return "/courses/{0}/discussion/forum/{1}/threads/{2}".format(course, discussion_id, thread_id)
+            return self.scope_ids.usage_id.course_key
 
     def get_scores(self):
         """
@@ -62,7 +65,7 @@ class ForumLeaderboardXBlock(LeaderboardXBlock):
         for thread in threads:
             score = thread['votes']['point']  # Might be 0
             if score:
-                thread['url'] = self.get_thread_url(course, self.discussion_id, thread['id'])
+                thread['url'] = _get_thread_url(course, self.discussion_id, thread['id'])
                 scored_threads.append((score, thread))
         return scored_threads
 
@@ -80,30 +83,42 @@ class ForumLeaderboardXBlock(LeaderboardXBlock):
         return self.create_fragment(
             "static/html/forum_leaderboard_studio_edit.html",
             context={'discussion_id': self.discussion_id, 'count': self.count},
-            javascript=["static/js/src/forum_leaderboard_studio.js"],
+            javascript=["static/js/src/leaderboard_studio.js", "static/js/src/forum_leaderboard_studio.js"],
             initialize='ForumLeaderboardStudioXBlock'
         )
 
+    def validate(self):
+        """
+        Validates the state of this xblock
+        """
+        _ = self.runtime.service(self, "i18n").ugettext
+        validation = super(ForumLeaderboardXBlock, self).validate()
+
+        if not self.discussion_id:
+            validation.add(
+                ValidationMessage(
+                    ValidationMessage.WARNING,
+                    _(u"You will need to configure this XBlock with a Discussion ID.")
+                )
+            )
+        return validation
+
     @XBlock.json_handler
     def studio_submit(self, data, suffix=''):
-        result = {'success': True, 'errors': []}
         try:
             count = int(data.get('count', LeaderboardXBlock.count.default))
             if not count > 0:
                 raise ValueError
         except ValueError:
-            result['success'] = False
-            result['errors'].append("'count' must be an integer and greater than 0.")
+            raise JsonHandlerError(400, "'count' must be an integer and greater than 0.")
 
         discussion_id = data.get('discussion_id', '').strip()
         if not isinstance(discussion_id, basestring):
-            result['success'] = False
-            result['errors'].append("'discussion_id' must be a string.")
+            raise JsonHandlerError(400, "'discussion_id' must be a string.")
 
-        if result['success']:
-            self.count = count
-            self.discussion_id = discussion_id
-        return result
+        self.count = count
+        self.discussion_id = discussion_id
+        return {}
 
     @staticmethod
     def workbench_scenarios():

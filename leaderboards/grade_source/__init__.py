@@ -8,6 +8,8 @@ class GradeSource(object):
     """
     Base class for grade source classes
     """
+    SOURCE_NAME = None  # Override this and set to a short string
+
     def __init__(self, host_block):
         """
         Initialize this grade source to retrieve grades from various xblocks
