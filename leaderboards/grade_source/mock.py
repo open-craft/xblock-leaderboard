@@ -2,7 +2,7 @@
 Mock code that generates random student grades.
 """
 import random
-from . import GradeSource
+from .base import GradeSource
 
 
 class MockGradeSource(GradeSource):
@@ -41,10 +41,13 @@ class MockGradeSource(GradeSource):
         if limit_hint is None:
             limit_hint = rand.randint(5, 80)
 
-        random_name = lambda: u"{first} {initial}.".format(
-            first=rand.choice(self.NAMES),
-            initial=rand.choice(self.ALPHABET)
-        )
-        random_grade = lambda: rand.randint(0, 100)
+        def random_name():
+            return u"{first} {initial}.".format(
+                first=rand.choice(self.NAMES),
+                initial=rand.choice(self.ALPHABET)
+            )
+
+        def random_grade():
+            return rand.randint(0, 100)
 
         return [(random_grade(), {"name": random_name()}) for _ in xrange(0, limit_hint)]
