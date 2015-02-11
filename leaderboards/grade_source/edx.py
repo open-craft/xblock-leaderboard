@@ -6,7 +6,7 @@ from . import GradeSource
 
 try:
     from courseware.grades import get_score
-    from courseware.module_utils import yield_dynamic_descriptor_descendents
+    from util.module_utils import yield_dynamic_descriptor_descendents
     EDX_FOUND = True
 except ImportError:
     EDX_FOUND = False
