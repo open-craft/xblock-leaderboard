@@ -2,7 +2,7 @@
 """
 Fetch grades from the edX LMS as efficiently as possible.
 """
-from . import GradeSource
+from .base import GradeSource
 
 try:
     from courseware.grades import get_score
@@ -60,8 +60,10 @@ class EdxLmsGradeSource(GradeSource):
         total_correct, total_possible = 0, 0
         course_id = target_block_id.course_key.for_branch(None).version_agnostic()
         target_block = self.host_block.runtime.get_block(target_block_id)
-        create_module = lambda descriptor: target_block.runtime.get_block(descriptor.location)
         student = self.host_block.runtime.get_real_user(self.host_block.runtime.anonymous_student_id)
+
+        def create_module(descriptor):
+            return target_block.runtime.get_block(descriptor.location)
 
         for module_descriptor in yield_dynamic_descriptor_descendents(target_block, create_module):
 
