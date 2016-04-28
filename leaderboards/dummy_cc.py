@@ -1,6 +1,7 @@
 """
 Dummy comment client module, used for testing.
 """
+from mock import Mock
 
 
 def make_thread_dict(number, points):
@@ -33,6 +34,9 @@ class Thread(object):
         # Could be 0.
         end = end and end + 1
         commentable_id = search_dict['commentable_id']
-        if commentable_id not in test_ids:
-            return [[]]
-        return [test_ids[commentable_id][0:end]]
+        threads = Mock()
+        if commentable_id in test_ids:
+            threads.collection = test_ids[commentable_id][0:end]
+        else:
+            threads.collection = []
+        return threads

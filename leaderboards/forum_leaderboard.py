@@ -59,7 +59,7 @@ class ForumLeaderboardXBlock(LeaderboardXBlock):
         threads = cc.Thread.search({
             'course_id': unicode(course), 'commentable_id': self.discussion_id,
             'sort_key': 'votes', 'per_page': self.count - 1
-        })[0]
+        }).collection
 
         scored_threads = []
         for thread in threads:
